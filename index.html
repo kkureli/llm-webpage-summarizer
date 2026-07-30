@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light" />
+  <meta name="description" content="AI webpage summarizer powered by a local Ollama LLM — Flask UI, no cloud API." />
+  <title>LLM Webpage Summarizer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink: #0f172a;
+      --muted: #64748b;
+      --bg: #f4f7fb;
+      --surface: #ffffff;
+      --accent: #0ea5a4;
+      --accent-hover: #0d9488;
+      --accent-soft: rgba(14, 165, 164, 0.12);
+      --line: #e2e8f0;
+      --shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 16px 40px rgba(15, 23, 42, 0.08);
+      color-scheme: light;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Plus Jakarta Sans", sans-serif;
+      color: var(--ink);
+      background-color: var(--bg);
+      background-image:
+        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(14, 165, 164, 0.18), transparent),
+        radial-gradient(ellipse 50% 40% at 100% 0%, rgba(56, 189, 248, 0.12), transparent),
+        linear-gradient(rgba(148, 163, 184, 0.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(148, 163, 184, 0.08) 1px, transparent 1px);
+      background-size: auto, auto, 48px 48px, 48px 48px;
+    }
+
+    main {
+      width: min(920px, calc(100% - 2rem));
+      margin: 0 auto;
+      padding: 4.5rem 0 3.5rem;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.55rem;
+      margin-bottom: 1.1rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    .brand-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 0 4px var(--accent-soft);
+    }
+
+    h1 {
+      margin: 0;
+      font-family: "Syne", sans-serif;
+      font-weight: 800;
+      font-size: clamp(2.4rem, 6vw, 3.5rem);
+      letter-spacing: -0.04em;
+      line-height: 1.05;
+    }
+
+    .lede {
+      margin: 1rem 0 1.75rem;
+      max-width: 36rem;
+      color: var(--muted);
+      font-size: 1.08rem;
+      line-height: 1.65;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.9rem 1.35rem;
+      border-radius: 12px;
+      font: inherit;
+      font-size: 0.95rem;
+      font-weight: 700;
+      text-decoration: none;
+      transition: background 0.2s ease, transform 0.15s ease, border-color 0.2s ease;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .btn-primary:hover { background: var(--accent-hover); }
+
+    .btn-ghost {
+      background: var(--surface);
+      color: var(--ink);
+      border: 1.5px solid var(--line);
+    }
+
+    .btn-ghost:hover { border-color: #cbd5e1; }
+
+    .shot {
+      display: block;
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      background: var(--surface);
+    }
+
+    .note {
+      margin-top: 1.5rem;
+      padding: 1.1rem 1.25rem;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--surface);
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.55;
+    }
+
+    .note strong { color: var(--ink); }
+
+    .note code {
+      padding: 0.12rem 0.4rem;
+      border-radius: 6px;
+      background: #e2e8f0;
+      color: #334155;
+      font-size: 0.85rem;
+    }
+
+    footer {
+      margin-top: 2rem;
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
+    footer a { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="brand"><span class="brand-dot" aria-hidden="true"></span> Local · Ollama · LLM</div>
+    <h1>LLM Webpage Summarizer</h1>
+    <p class="lede">
+      Paste a URL and get a short AI summary — powered by a local open-source model.
+      No OpenAI API key, no cloud costs.
+    </p>
+
+    <div class="actions">
+      <a class="btn btn-primary" href="https://github.com/kkureli/llm-webpage-summarizer">View on GitHub</a>
+      <a class="btn btn-ghost" href="https://github.com/kkureli/llm-webpage-summarizer#setup">Setup &amp; run locally</a>
+    </div>
+
+    <img
+      class="shot"
+      src="demo.png"
+      alt="Demo: summarizing a NASA Curiosity Mars rover article with the local Ollama webpage summarizer"
+      width="1600"
+      height="900"
+    />
+
+    <p class="note">
+      <strong>GitHub Pages hosts this landing page only.</strong>
+      The summarizer itself needs Python + <a href="https://ollama.com">Ollama</a> on your machine
+      (<code>python app.py</code> → <code>http://127.0.0.1:5000</code>).
+    </p>
+
+    <footer>
+      <a href="https://github.com/kkureli/llm-webpage-summarizer">kkureli/llm-webpage-summarizer</a>
+    </footer>
+  </main>
+</body>
+</html>

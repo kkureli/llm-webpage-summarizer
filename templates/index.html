@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light" />
+  <title>Webpage Summarizer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink: #0f172a;
+      --muted: #64748b;
+      --bg: #f4f7fb;
+      --surface: #ffffff;
+      --accent: #0ea5a4;
+      --accent-hover: #0d9488;
+      --accent-soft: rgba(14, 165, 164, 0.12);
+      --line: #e2e8f0;
+      --danger: #dc2626;
+      --danger-bg: #fef2f2;
+      --shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 12px 32px rgba(15, 23, 42, 0.06);
+      color-scheme: light;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Plus Jakarta Sans", sans-serif;
+      color: var(--ink);
+      background-color: var(--bg);
+      background-image:
+        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(14, 165, 164, 0.18), transparent),
+        radial-gradient(ellipse 50% 40% at 100% 0%, rgba(56, 189, 248, 0.12), transparent),
+        linear-gradient(rgba(148, 163, 184, 0.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(148, 163, 184, 0.08) 1px, transparent 1px);
+      background-size: auto, auto, 48px 48px, 48px 48px;
+    }
+
+    main {
+      width: min(680px, calc(100% - 2rem));
+      margin: 0 auto;
+      padding: 5rem 0 4rem;
+      transition: width 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    main.is-split {
+      width: min(1120px, calc(100% - 2rem));
+    }
+
+    .header {
+      margin-bottom: 2.5rem;
+      transition: margin 0.45s ease;
+    }
+
+    main.is-split .header {
+      margin-bottom: 1.75rem;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.55rem;
+      margin-bottom: 1.25rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    .brand-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 0 4px var(--accent-soft);
+    }
+
+    h1 {
+      margin: 0;
+      font-family: "Syne", sans-serif;
+      font-weight: 800;
+      font-size: clamp(2.4rem, 6vw, 3.4rem);
+      letter-spacing: -0.04em;
+      line-height: 1.05;
+      color: var(--ink);
+      transition: font-size 0.45s ease;
+    }
+
+    main.is-split h1 {
+      font-size: clamp(1.9rem, 4vw, 2.5rem);
+    }
+
+    .lede {
+      margin: 0.9rem 0 0;
+      max-width: 32rem;
+      color: var(--muted);
+      font-size: 1.05rem;
+      line-height: 1.6;
+      transition: opacity 0.35s ease, max-height 0.45s ease, margin 0.45s ease;
+    }
+
+    main.is-split .lede {
+      opacity: 0.85;
+      max-width: 40rem;
+      font-size: 0.98rem;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.25rem;
+      align-items: start;
+      transition: gap 0.45s ease;
+    }
+
+    main.is-split .workspace {
+      grid-template-columns: minmax(280px, 0.85fr) minmax(320px, 1.15fr);
+      gap: 1.5rem;
+    }
+
+    .input-col {
+      min-width: 0;
+    }
+
+    main.is-split .input-col {
+      animation: slideToLeft 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    .output-col {
+      min-width: 0;
+      display: none;
+    }
+
+    main.is-split .output-col {
+      display: block;
+      animation: slideFromRight 0.65s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    @keyframes slideToLeft {
+      from {
+        opacity: 0.7;
+        transform: translateX(12%);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @keyframes slideFromRight {
+      from {
+        opacity: 0;
+        transform: translateX(40px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    .panel {
+      padding: 1.35rem;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+
+    form {
+      display: grid;
+      gap: 0.75rem;
+    }
+
+    label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      color: var(--muted);
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 0.6rem;
+    }
+
+    input[type="url"] {
+      width: 100%;
+      padding: 0.95rem 1.1rem;
+      border: 1.5px solid var(--line);
+      border-radius: 12px;
+      background: #f8fafc;
+      color: var(--ink);
+      font: inherit;
+      font-size: 0.98rem;
+      font-weight: 500;
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    }
+
+    input[type="url"]::placeholder {
+      color: #94a3b8;
+      font-weight: 400;
+    }
+
+    input[type="url"]:focus {
+      border-color: var(--accent);
+      background: #fff;
+      box-shadow: 0 0 0 4px var(--accent-soft);
+    }
+
+    button {
+      padding: 0.95rem 1.4rem;
+      border: 0;
+      border-radius: 12px;
+      background: var(--accent);
+      color: #fff;
+      font: inherit;
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      cursor: pointer;
+      transition: background 0.2s ease, transform 0.15s ease, opacity 0.2s ease;
+      white-space: nowrap;
+    }
+
+    button:hover:not(:disabled) { background: var(--accent-hover); }
+    button:active:not(:disabled) { transform: translateY(1px); }
+
+    button:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    .error {
+      margin-top: 1rem;
+      padding: 1rem 1.2rem;
+      border: 1px solid #fecaca;
+      border-radius: 14px;
+      background: var(--danger-bg);
+      color: var(--danger);
+      font-size: 0.95rem;
+      font-weight: 500;
+      animation: rise 0.35s ease;
+    }
+
+    .skeleton {
+      display: none;
+      padding: 1.5rem;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+
+    .skeleton.is-visible {
+      display: block;
+    }
+
+    .skeleton-title {
+      width: 30%;
+      height: 1.35rem;
+      margin-bottom: 1.15rem;
+      border-radius: 8px;
+      background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.2s ease-in-out infinite;
+    }
+
+    .skeleton-line {
+      height: 0.8rem;
+      margin-bottom: 0.75rem;
+      border-radius: 8px;
+      background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.2s ease-in-out infinite;
+    }
+
+    .skeleton-line:nth-child(2) { width: 96%; animation-delay: 0.05s; }
+    .skeleton-line:nth-child(3) { width: 90%; animation-delay: 0.1s; }
+    .skeleton-line:nth-child(4) { width: 93%; animation-delay: 0.15s; }
+    .skeleton-line:nth-child(5) { width: 62%; margin-bottom: 0; animation-delay: 0.2s; }
+
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    .result {
+      padding: 1.5rem 1.6rem;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+      max-height: min(70vh, 640px);
+      overflow-y: auto;
+    }
+
+    .result h2 {
+      margin: 0 0 1rem;
+      font-family: "Syne", sans-serif;
+      font-weight: 700;
+      font-size: 1.35rem;
+      letter-spacing: -0.03em;
+      color: var(--ink);
+    }
+
+    .result .body {
+      color: #334155;
+      font-size: 0.98rem;
+      line-height: 1.7;
+    }
+
+    .result .body p { margin: 0 0 0.9rem; }
+    .result .body p:last-child { margin-bottom: 0; }
+    .result .body h1,
+    .result .body h2,
+    .result .body h3 {
+      margin: 1.1rem 0 0.5rem;
+      font-family: "Syne", sans-serif;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+      font-size: 1.05rem;
+    }
+    .result .body ul, .result .body ol {
+      margin: 0 0 0.9rem;
+      padding-left: 1.15rem;
+    }
+    .result .body li { margin: 0.35rem 0; }
+    .result .body li::marker { color: var(--accent); }
+    .result .body strong { font-weight: 700; color: var(--ink); }
+
+    .hint {
+      margin-top: 1.25rem;
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
+    .hint code {
+      padding: 0.12rem 0.4rem;
+      border-radius: 6px;
+      background: #e2e8f0;
+      color: #334155;
+      font-size: 0.8rem;
+    }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 860px) {
+      main,
+      main.is-split {
+        width: min(680px, calc(100% - 2rem));
+      }
+
+      main.is-split .workspace {
+        grid-template-columns: 1fr;
+      }
+
+      main.is-split .input-col,
+      main.is-split .output-col {
+        animation: rise 0.45s ease both;
+      }
+    }
+
+    @media (max-width: 560px) {
+      main { padding-top: 3rem; }
+      .row { grid-template-columns: 1fr; }
+      button { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <main id="app" class="{% if summary_html or error %}is-split{% endif %}">
+    <header class="header">
+      <div class="brand"><span class="brand-dot" aria-hidden="true"></span> Local · Ollama</div>
+      <h1>Webpage Summarizer</h1>
+      <p class="lede">Paste a URL. A local model reads the page and returns a clear, short summary.</p>
+    </header>
+
+    <div class="workspace">
+      <div class="input-col">
+        <div class="panel">
+          <form id="summarize-form" method="post" action="/">
+            <label for="url">Website URL</label>
+            <div class="row">
+              <input
+                id="url"
+                name="url"
+                type="url"
+                placeholder="https://example.com"
+                value="{{ url or '' }}"
+                required
+                autofocus
+              />
+              <button id="summarize-btn" type="submit">Summarize</button>
+            </div>
+          </form>
+        </div>
+
+        {% if error %}
+          <div id="error" class="error">{{ error }}</div>
+        {% endif %}
+
+        <p class="hint">Requires Ollama running locally with <code>llama3.2</code>.</p>
+      </div>
+
+      <div class="output-col">
+        <div id="skeleton" class="skeleton" aria-hidden="true" aria-busy="false">
+          <div class="skeleton-title"></div>
+          <div class="skeleton-line"></div>
+          <div class="skeleton-line"></div>
+          <div class="skeleton-line"></div>
+          <div class="skeleton-line"></div>
+        </div>
+
+        {% if summary_html %}
+          <section id="result" class="result">
+            <h2>Summary</h2>
+            <div class="body">{{ summary_html | safe }}</div>
+          </section>
+        {% endif %}
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const app = document.getElementById("app");
+    const form = document.getElementById("summarize-form");
+    const btn = document.getElementById("summarize-btn");
+    const skeleton = document.getElementById("skeleton");
+
+    form.addEventListener("submit", () => {
+      if (!form.checkValidity()) return;
+
+      btn.disabled = true;
+      btn.textContent = "Summarizing…";
+
+      app.classList.add("is-split");
+
+      const result = document.getElementById("result");
+      const error = document.getElementById("error");
+      if (result) result.style.display = "none";
+      if (error) error.style.display = "none";
+
+      skeleton.classList.add("is-visible");
+      skeleton.setAttribute("aria-busy", "true");
+      skeleton.setAttribute("aria-hidden", "false");
+    });
+  </script>
+</body>
+</html>
