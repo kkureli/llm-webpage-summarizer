@@ -1,0 +1,5 @@
+# Keep GitHub language stats focused on Python (HTML is mostly CSS chrome)
+index.html linguist-documentation=true
+demo.png linguist-documentation=true
+assets/** linguist-documentation=true
+templates/** linguist-detectable=false
